@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+  <div class="jumbotron">
+    <h2>Splitwise API Example</h2>
+  </div>
+  <div class="buttonCont" style="text-align:center;margin-top:10%">
+    {% if not current_user.googleSheetAccess %}
+    <a href="{{ url_for('pages.googleSpreadsheetLogin') }}" class="btn btn-primary" type="button">Spreadsheet Login</a>
+    {% endif %}
+    {% if not current_user.splitwiseAccess %}
+    <a href="{{ url_for('pages.splitwiseLogin') }}" class="btn btn-primary" type="button">Splitwise Login</a>
+    {% endif %}
+  </div>
+
+{% endblock %}
