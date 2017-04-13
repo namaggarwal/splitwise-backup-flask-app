@@ -8,12 +8,12 @@ import datetime
 import httplib2
 import json
 
-
 pages = Blueprint('pages', __name__,template_folder='templates')
 
 @pages.route("/")
 @login_required
 def home():
+    app.logger.debug("User "+current_user.email+" logged in")
     return render_template("home.html")
 
 @pages.route("/login")
@@ -50,7 +50,7 @@ def googleLogin():
             user.googleSheetAccess=False
             user.save()
         login_user(user)
-
+        app.logger.debug("User "+email+" logged in to google")
         return redirect(url_for('pages.home'))
 
 
@@ -66,6 +66,7 @@ def googleSpreadsheetLogin():
     flow.params['access_type'] = 'offline'
 
     if 'code' not in request.args:
+        app.logger.debug("User "+current_user.email+" trying to provide spreadsheet access")
         auth_uri = flow.step1_get_authorize_url()
         return redirect(auth_uri)
     else:
@@ -81,7 +82,7 @@ def googleSpreadsheetLogin():
         user.googleRevokeURI    = credentials["revoke_uri"]
         user.googleSheetAccess = True
         user.save()
-
+        app.logger.debug("User "+user.email+" provided spreadsheet access")
         return redirect(url_for('pages.home'))
 
 
@@ -89,6 +90,7 @@ def googleSpreadsheetLogin():
 @login_required
 def splitwiseLogin():
     if 'oauth_token' not in request.args or 'oauth_verifier' not in request.args:
+        app.logger.debug("User "+current_user.email+" trying to provide splitwise access")
         sObj = Splitwise(app.config["SPLITWISE_CONSUMER_KEY"],app.config["SPLITWISE_CONSUMER_SECRET"])
         url, secret = sObj.getAuthorizeURL()
         session['splitwisesecret'] = secret
@@ -104,5 +106,5 @@ def splitwiseLogin():
         user.splitwiseTokenSecret = access_token["oauth_token_secret"]
         user.splitwiseAccess = True
         user.save()
-
+        app.logger.debug("User "+user.email+" provided splitwise access")
         return redirect(url_for('pages.home'))

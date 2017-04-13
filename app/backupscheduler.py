@@ -7,11 +7,12 @@ import utils
 import logging
 import httplib2
 import calendar
+from logging.handlers import RotatingFileHandler
+from logger import Logger
 
-logging.basicConfig()
-logging.getLogger('googleapicliet.discovery_cache').setLevel(logging.ERROR)
-
-
+### Add Logging ###
+#log = logging.getLogger("BACKUPLOGGER")
+#log.addHandler(Logger.getBackupHandler())
 
 def getGoogleCredentials(app, user):
 
@@ -29,7 +30,7 @@ def getGoogleCredentials(app, user):
     )
 
     if googlecredentials.access_token_expired:
-        print "Google credentials for user expired. Asking for new token"
+        app.logger.debug("Google credentials for %s expired. Asking for new token",user.email)
         http = httplib2.Http()
         googlecredentials.refresh(http)
         user.googleAccessToken = googlecredentials.access_token
@@ -69,13 +70,13 @@ def backupData(app):
         #Current time
         now = datetime.datetime.now()
 
-        print "Backing up data at "+str(now)
+        app.logger.debug("Backing up data")
 
         users = User.query.filter_by(splitwiseAccess=True,googleSheetAccess=True).all()
 
         for user in users:
 
-            print "Backing up data for "+user.email
+            app.logger.debug("Backing up data for %s",user.email)
 
             #Get google credentials of user
             googlecredentials = getGoogleCredentials(app,user)
@@ -90,7 +91,8 @@ def backupData(app):
             splitwiseObj.setAccessToken({"oauth_token":user.splitwiseToken,"oauth_token_secret":user.splitwiseTokenSecret})
 
             ########### Get data from Splitwise ####################
-            print "Getting data for user from splitwise"
+            app.logger.debug("Getting data for user from splitwise")
+
             friends = splitwiseObj.getFriends()
 
             ########## Put data in Google #########################
@@ -103,7 +105,7 @@ def backupData(app):
 
             #Sheet is not there, make a new sheet
             if spreadsheet is None:
-                print "Sheet does not exist. Creating a new sheet"
+                app.logger.debug("Sheet does not exist. Creating a new sheet")
                 spreadsheet = createSheetForUser(user, googleSheet, spreadsheetName, currMonth)
 
             #Check if sheet is present in the spreadsheet
@@ -155,4 +157,4 @@ def backupData(app):
 
             googleSheet.batchUpdate(spreadsheet.getId(),updateData)
 
-            print "Data for user backed up successfully for user "+user.email
+            app.logger.debug("Data backed up successfully for %s ",user.email)
