@@ -1,4 +1,4 @@
-from database import db, bcrypt, login_manager
+from router import db, bcrypt, login_manager
 
 @login_manager.user_loader
 def load_user(userid):

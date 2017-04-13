@@ -1,9 +1,10 @@
 import os
 from flask import Flask
-from database import db, bcrypt, login_manager
+from router import db, bcrypt, login_manager
 from views import pages
 from apscheduler.schedulers.background import BackgroundScheduler
 from backupscheduler import backupData
+from logger import Logger
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_object('config')
@@ -36,9 +37,12 @@ bcrypt.init_app(app)
 app.register_blueprint(pages)
 
 
+### Add Logging ###
+app.logger.addHandler(Logger.getAppHandler())
+
 ### Backup ####
 @app.before_first_request
 def initialize():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(backupData, 'interval', minutes=10, args=[app])
+    scheduler.add_job(backupData, 'interval', minutes=2, args=[app])
     scheduler.start()
