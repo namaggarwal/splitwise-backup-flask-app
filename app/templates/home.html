@@ -1,16 +1,36 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
-  <div class="jumbotron">
-    <h2>Splitwise API Example</h2>
-  </div>
-  <div class="buttonCont" style="text-align:center;margin-top:10%">
+
+  <div class="homeCont">
     {% if not current_user.googleSheetAccess %}
-    <a href="{{ url_for('pages.googleSpreadsheetLogin') }}" class="btn btn-primary" type="button">Spreadsheet Login</a>
+      <div class="googleLogin accessCont">
+        <p>Login to Drive so we can backup your data</p>
+        <img src="/static/img/google.png">
+        <a href="{{ url_for('pages.googleSpreadsheetLogin') }}" class="loginBtn loginBtn--google" type="button">
+          Login with Google
+        </a>
+      </div>
     {% endif %}
     {% if not current_user.splitwiseAccess %}
-    <a href="{{ url_for('pages.splitwiseLogin') }}" class="btn btn-primary" type="button">Splitwise Login</a>
+      <div class="splitwiseLogin accessCont">
+        <p>Login to Splitwise so we can fetch your data</p>
+        <img src="/static/img/splitwise.png">
+        <a href="{{ url_for('pages.splitwiseLogin') }}" class="loginBtn loginBtn--splitwise" type="button">
+          Login with Splitwise
+        </a>
+      </div>
     {% endif %}
+    {% if current_user.googleSheetAccess and current_user.splitwiseAccess %}
+      <div class="backupInfo">
+        <p>Your data is being backed up</p>
+        <div class="lastbackup">
+          <span>Last Backup time : {{ lastBackupTime }}</span>
+        </div>
+      </div>
+    {% endif %}
+
+
   </div>
 
 {% endblock %}
