@@ -5,6 +5,8 @@ from views import pages
 from apscheduler.schedulers.background import BackgroundScheduler
 from backupscheduler import backupData
 from logger import Logger
+from flask_migrate import Migrate
+
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_object('config')
@@ -39,6 +41,9 @@ app.register_blueprint(pages)
 
 ### Add Logging ###
 app.logger.addHandler(Logger.getAppHandler())
+
+### Migration ###
+migrate = Migrate(app, db)
 
 ### Backup ####
 @app.before_first_request
