@@ -93,3 +93,6 @@ ENV/
 
 #DB
 *.db
+
+#logs
+logs/
