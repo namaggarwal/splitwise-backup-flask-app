@@ -23,3 +23,7 @@ def stringToDatetime(text):
 def datetimeToString(date):
 
     return date.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+def datetimeToHumanString(date):
+
+    return date.strftime("%d %B %Y %I:%M:%S %p")

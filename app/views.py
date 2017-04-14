@@ -7,6 +7,7 @@ from splitwise import Splitwise
 import datetime
 import httplib2
 import json
+import utils
 
 pages = Blueprint('pages', __name__,template_folder='templates')
 
@@ -14,7 +15,10 @@ pages = Blueprint('pages', __name__,template_folder='templates')
 @login_required
 def home():
     app.logger.debug("User "+current_user.email+" logged in")
-    return render_template("home.html")
+    lastBackupTime = "Will backup soon"
+    if current_user.lastBackupTime:
+        lastBackupTime = utils.datetimeToHumanString(current_user.lastBackupTime)
+    return render_template("home.html",lastBackupTime=lastBackupTime)
 
 @pages.route("/login")
 def login():

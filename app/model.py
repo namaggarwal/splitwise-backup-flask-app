@@ -17,6 +17,7 @@ class User(db.Model):
     splitwiseToken = db.Column(db.String(256), unique=True)
     splitwiseTokenSecret = db.Column(db.String(256))
     splitwiseAccess = db.Column(db.Boolean)
+    lastBackupTime  = db.Column(db.DateTime)
     sheets = db.relationship('Sheet', backref='user',
                                 lazy='dynamic')
 

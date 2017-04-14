@@ -7,12 +7,6 @@ import utils
 import logging
 import httplib2
 import calendar
-from logging.handlers import RotatingFileHandler
-from logger import Logger
-
-### Add Logging ###
-#log = logging.getLogger("BACKUPLOGGER")
-#log.addHandler(Logger.getBackupHandler())
 
 def getGoogleCredentials(app, user):
 
@@ -79,10 +73,18 @@ def backupData(app):
             app.logger.debug("Backing up data for %s",user.email)
 
             #Get google credentials of user
-            googlecredentials = getGoogleCredentials(app,user)
+            try:
+                googlecredentials = getGoogleCredentials(app,user)
+            except:
+                app.logger.error("Error getting Google credentials of user "+user.email)
+                continue
 
             #Get googlesheet object
-            googleSheet = GoogleSheet(googlecredentials)
+            try:
+                googleSheet = GoogleSheet(googlecredentials)
+            except:
+                app.logger.error("Error getting sheet from Google of user "+user.email)
+                continue
 
             #Make splitwise object
             splitwiseObj = Splitwise(app.config["SPLITWISE_CONSUMER_KEY"],app.config["SPLITWISE_CONSUMER_SECRET"])
@@ -93,7 +95,11 @@ def backupData(app):
             ########### Get data from Splitwise ####################
             app.logger.debug("Getting data for user from splitwise")
 
-            friends = splitwiseObj.getFriends()
+            try:
+                friends = splitwiseObj.getFriends()
+            except:
+                app.logger.error("Error getting data from Splitwise for user "+user.email)
+                continue
 
             ########## Put data in Google #########################
             spreadsheetName = "SplitwiseBackup"+str(now.year)
@@ -106,7 +112,11 @@ def backupData(app):
             #Sheet is not there, make a new sheet
             if spreadsheet is None:
                 app.logger.debug("Sheet does not exist. Creating a new sheet")
-                spreadsheet = createSheetForUser(user, googleSheet, spreadsheetName, currMonth)
+                try:
+                    spreadsheet = createSheetForUser(user, googleSheet, spreadsheetName, currMonth)
+                except:
+                    app.logger.error("Error creating sheet for user "+user.email)
+                    continue
 
             #Check if sheet is present in the spreadsheet
             sheets = spreadsheet.getSheets()
@@ -120,14 +130,27 @@ def backupData(app):
 
             #If not create a current month sheet
             if not sheetPresent:
-                createSheetInSpreadSheet(googleSheet,spreadsheet,currMonth)
+                app.logger.debug("Sheet for month %s does not exist. Creating new sheet",currMonth)
+                try:
+                    createSheetInSpreadSheet(googleSheet,spreadsheet,currMonth)
+                    app.logger.debug("Sheet for month %s created",currMonth)
+                except:
+                    app.logger.error("Error creating sheet for month %s for user %s",currMonth,user.email)
+                    continue
+
 
             #Data to be updated in sheet
             updateData = {
             }
 
             #Get current sheet data
-            data =  googleSheet.getData(spreadsheet.getId(),currMonth+"!A1:Z1000")
+            try:
+                app.logger.debug("Getting current sheet data for user %s",user.email)
+                data =  googleSheet.getData(spreadsheet.getId(),currMonth+"!A1:Z1000")
+            except:
+                app.logger.error("Error sheet data for month %s for user %s",currMonth,user.email)
+                continue
+
 
             if data is None:
                 data = [["Date"]]
@@ -155,6 +178,15 @@ def backupData(app):
 
                 updateData[utils.getColumnNameFromIndex(index)+str(newRow)] = amount
 
-            googleSheet.batchUpdate(spreadsheet.getId(),updateData)
+            try:
+                app.logger.debug("Saving data for user %s",user.email)
+                googleSheet.batchUpdate(spreadsheet.getId(),updateData)
+            except:
+                app.logger.error("Error saving sheet data for month %s for user %s",currMonth,user.email)
+                continue
+
+
+            user.lastBackupTime = now
+            user.save()
 
             app.logger.debug("Data backed up successfully for %s ",user.email)
