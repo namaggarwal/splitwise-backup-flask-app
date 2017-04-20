@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
+{% block title %}Splitwise Backup - Login{% endblock %}
 {% block content %}
-  <div class="buttonCont" style="text-align:center;margin-top:10%">
-    <a href="{{ url_for('pages.googleLogin') }}" class="loginBtn loginBtn--google" type="button">
+  <div class="loginCont">
+    <a href="{{ url_for('pages.googleLogin') }}" class="btn btn-success">
       Login with Google
     </a>
   </div>

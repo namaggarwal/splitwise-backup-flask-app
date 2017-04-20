@@ -1,36 +1,51 @@
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
+{% block title %}Splitwise Login{% endblock %}
 {% block content %}
-
-  <div class="homeCont">
-    {% if not current_user.googleSheetAccess %}
-      <div class="googleLogin accessCont">
-        <p>Login to Drive so we can backup your data</p>
-        <img src="/static/img/google.png">
-        <a href="{{ url_for('pages.googleSpreadsheetLogin') }}" class="loginBtn loginBtn--google" type="button">
-          Login with Google
-        </a>
-      </div>
-    {% endif %}
-    {% if not current_user.splitwiseAccess %}
-      <div class="splitwiseLogin accessCont">
-        <p>Login to Splitwise so we can fetch your data</p>
-        <img src="/static/img/splitwise.png">
-        <a href="{{ url_for('pages.splitwiseLogin') }}" class="loginBtn loginBtn--splitwise" type="button">
-          Login with Splitwise
-        </a>
-      </div>
-    {% endif %}
-    {% if current_user.googleSheetAccess and current_user.splitwiseAccess %}
-      <div class="backupInfo">
+<div class="container-fluid">
+  {% if current_user.googleSheetAccess and current_user.splitwiseAccess %}
+    <div class="row backupInfo">
+      <div class="col-md-12 col-centered">
         <p>Your data is being backed up</p>
         <div class="lastbackup">
-          <span>Last Backup time : {{ lastBackupTime }}</span>
+          <span>Last Backup time :{{ lastBackupTime }}</span>
         </div>
       </div>
-    {% endif %}
-
-
-  </div>
-
+    </div>
+  {% else %}
+    <div class="row headRow row-centered">
+      {% if not current_user.googleSheetAccess %}
+        <div class="col-md-6 col-centered">
+          <p>Login to Drive so we can backup your data</p>
+        </div>
+      {% endif %}
+      {% if not current_user.splitwiseAccess %}
+        <div class="col-md-6 col-centered">
+          <p>Login to Splitwise so we can fetch your data</p>
+        </div>
+      {% endif %}
+    </div>
+    <div class="row loginRow row-centered">
+      {% if not current_user.googleSheetAccess %}
+        <div class="col-md-4 col-centered googleCont">
+          <img src="/static/img/google.png">
+        </div>
+        <div class="col-md-2 col-centered googleCont">
+          <a href="{{ url_for('pages.googleSpreadsheetLogin') }}" class="btn btn-success">
+            Login with Google
+          </a>
+        </div>
+      {% endif %}
+      {% if not current_user.googleSheetAccess %}
+        <div class="col-md-4 col-centered splitwiseCont">
+          <img src="/static/img/splitwise.png">
+        </div>
+        <div class="col-md-2 col-centered splitwiseCont">
+          <a href="{{ url_for('pages.splitwiseLogin') }}" class="btn btn-success">
+            Login with Splitwise
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
 {% endblock %}

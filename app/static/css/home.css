@@ -13,87 +13,9 @@
   font-size: 20px;
 }
 
-/* Shared */
-.loginBtn {
-  text-decoration: none;
-  display: inline-block;
-  box-sizing: border-box;
-  position: relative;
-  /* width: 13em;  - apply for fixed size */
-  margin: 0.2em;
-  padding: 0 15px 0 46px;
-  border: none;
-  text-align: left;
-  line-height: 34px;
-  white-space: nowrap;
-  border-radius: 0.2em;
-  font-size: 16px;
-  color: #FFF;
-}
-.loginBtn:before {
-  content: "";
-  box-sizing: border-box;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 34px;
-  height: 100%;
-}
-.loginBtn:focus {
-  outline: none;
-}
-.loginBtn:active {
-  box-shadow: inset 0 0 0 32px rgba(0,0,0,0.1);
-}
-
-a.loginBtn:focus, a.loginBtn:hover{
-  text-decoration: none;
-}
-
-/* Google */
-.loginBtn--google {
-  /*font-family: "Roboto", Roboto, arial, sans-serif;*/
-  background: #e0e0e0;
-  color: blue;
-}
-.loginBtn--google:before {
-  background: url("/static/img/google.png");
-  background-size:contain;
-}
-.loginBtn--google:hover,
-.loginBtn--google:focus {
-  background: #bdbdbd;
-  color: #FFF
-}
-
-/* Splitwise */
-.loginBtn--splitwise {
-  /*font-family: "Roboto", Roboto, arial, sans-serif;*/
-  background: #e0e0e0;
-  color: blue;
-}
-.loginBtn--splitwise:before {
-  background: url("/static/img/splitwise.png");
-  background-size:contain;
-}
-.loginBtn--splitwise:hover,
-.loginBtn--splitwise:focus {
-  background: #bdbdbd;
-  color: #FFF
-}
-
-.homeCont{
+.loginCont{
   text-align:center;
-}
-.homeCont .accessCont{
-    text-align: center;
-    width: 49%;
-    box-sizing: border-box;
-    display: inline-block;
-}
-
-.homeCont .accessCont img{
-  width: 50%;
+  margin-top:10%;
 }
 
 .backupInfo{
@@ -112,4 +34,43 @@ a.loginBtn:focus, a.loginBtn:hover{
   bottom: 1%;
   text-align: center;
   width: 100%;
+}
+
+.pageerror{
+  text-align: center;
+  font-size: 32px;
+  color: red;
+  margin-top: 5%;
+}
+
+/* centered columns styles */
+.row-centered {
+    text-align:center;
+}
+.col-centered {
+    display:inline-block;
+    float:none;
+    /* reset the text-align */
+    text-align:left;
+    /* inline-block space fix */
+    margin-right:-4px;
+    text-align: center;
+}
+
+.googleCont img{
+  width: 61%;
+}
+
+.splitwiseCont img{
+  width: 50%;
+}
+
+.loginRow{
+  margin-top: 4%;
+}
+
+.headRow{
+  font-size: 16px;
+  color: #34495e;
+  font-weight: bold;
 }
