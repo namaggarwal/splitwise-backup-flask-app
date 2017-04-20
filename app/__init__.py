@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 from router import db, bcrypt, login_manager
 from views import pages
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -44,6 +44,16 @@ app.logger.addHandler(Logger.getAppHandler())
 
 ### Migration ###
 migrate = Migrate(app, db)
+
+
+### Error Handlers ###
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('error.html',errorcode=404), 404
+
+@app.errorhandler(500)
+def error_request(e):
+    return render_template('error.html',errorcode=500), 500
 
 ### Backup ####
 @app.before_first_request

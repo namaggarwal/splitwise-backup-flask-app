@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}
+{% if errorcode == 404 %}
+Splitwise Backup - Page Not Found
+{% elif errorcode == 500 %}
+Splitwise Backup - Error
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="pageerror">
+{% if errorcode == 404 %}
+404 - Page Not Found
+{% elif errorcode == 500 %}
+500 - Some Error Occured
+{% endif %}
+</div>
+{% endblock %}
