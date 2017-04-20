@@ -1,15 +1,33 @@
-from flask import Blueprint, render_template, redirect, session, url_for, request, flash, current_app as app
+from flask import Blueprint, render_template, redirect, session, url_for, request, flash, abort, current_app as app
 from model import User
 from flask_login import login_required, login_user, current_user
 from oauth2client import client
 from googlesheets import GoogleSheet
 from splitwise import Splitwise
+from router import bcrypt
 import datetime
 import httplib2
 import json
 import utils
 
 pages = Blueprint('pages', __name__,template_folder='templates')
+
+#### String Constants ####
+INCLUDE_GRANTED_SCOPES = "include_granted_scopes"
+ACCESS_TYPE = "access_type"
+GOOGLE_SECRET = "google_secret"
+GOOGLE_CODE = "code"
+GOOGLE_ID_TOKEN = "id_token"
+GOOGLE_EMAIL = "email"
+GOOGLE_ACCESS_TOKEN = "access_token"
+GOOGLE_REFRESH_TOKEN = "refresh_token"
+GOOGLE_TOKEN_EXPIRY = "token_expiry"
+GOOGLE_TOKEN_URI = "token_uri"
+GOOGLE_REVOKE_URI = "revoke_uri"
+SPLITWISE_SECRET = "splitwise_secret"
+SPLITWISE_OAUTH_TOKEN = "oauth_token"
+SPLITWISE_OAUTH_VERIFIER = "oauth_verifier"
+SPLITWISE_OAUTH_TOKEN_SECRET = "oauth_token_secret"
 
 @pages.route("/")
 @login_required
@@ -32,25 +50,28 @@ def googleLogin():
     scope='email',
     redirect_uri=url_for('pages.googleLogin', _external=True))
 
-    flow.params['include_granted_scopes'] = "true"
-    flow.params['access_type'] = 'offline'
+    flow.params[INCLUDE_GRANTED_SCOPES] = "true"
+    flow.params[ACCESS_TYPE] = 'offline'
 
-    if 'code' not in request.args:
+    if GOOGLE_CODE not in request.args:
         auth_uri = flow.step1_get_authorize_url()
+        session[GOOGLE_SECRET] = bcrypt.generate_password_hash(app.config["FLASK_SECRET_KEY"])
         return redirect(auth_uri)
     else:
-        auth_code = request.args.get('code')
+        if not bcrypt.check_password_hash(session[GOOGLE_SECRET], app.config["FLASK_SECRET_KEY"]):
+            abort(500)
+        auth_code = request.args.get(GOOGLE_CODE)
         credentials = flow.step2_exchange(auth_code)
         credentials = json.loads(credentials.to_json())
-        email = credentials["id_token"]["email"]
+        email = credentials[GOOGLE_ID_TOKEN][GOOGLE_EMAIL]
         user = User.query.filter_by(email=email).first()
         if not user:
             user = User(email=email)
-            user.googleAccessToken  = credentials["access_token"]
-            user.googleRefreshToken = credentials["refresh_token"]
-            user.googleTokenExpiry  = credentials["token_expiry"]
-            user.googleTokenURI     = credentials["token_uri"]
-            user.googleRevokeURI    = credentials["revoke_uri"]
+            user.googleAccessToken  = credentials[GOOGLE_ACCESS_TOKEN]
+            user.googleRefreshToken = credentials[GOOGLE_REFRESH_TOKEN]
+            user.googleTokenExpiry  = credentials[GOOGLE_TOKEN_EXPIRY]
+            user.googleTokenURI     = credentials[GOOGLE_TOKEN_URI]
+            user.googleRevokeURI    = credentials[GOOGLE_REVOKE_URI]
             user.googleSheetAccess=False
             user.save()
         login_user(user)
@@ -66,24 +87,24 @@ def googleSpreadsheetLogin():
     scope='https://www.googleapis.com/auth/spreadsheets',
     redirect_uri=url_for('pages.googleSpreadsheetLogin', _external=True))
 
-    flow.params['include_granted_scopes'] = "true"
-    flow.params['access_type'] = 'offline'
+    flow.params[INCLUDE_GRANTED_SCOPES] = "true"
+    flow.params[ACCESS_TYPE] = 'offline'
 
-    if 'code' not in request.args:
+    if GOOGLE_CODE not in request.args:
         app.logger.debug("User "+current_user.email+" trying to provide spreadsheet access")
         auth_uri = flow.step1_get_authorize_url()
         return redirect(auth_uri)
     else:
-        auth_code = request.args.get('code')
+        auth_code = request.args.get(GOOGLE_CODE)
         credentials = flow.step2_exchange(auth_code)
         credentials = json.loads(credentials.to_json())
 
         user = current_user
-        user.googleAccessToken  = credentials["access_token"]
-        user.googleRefreshToken = credentials["refresh_token"]
-        user.googleTokenExpiry  = credentials["token_expiry"]
-        user.googleTokenURI     = credentials["token_uri"]
-        user.googleRevokeURI    = credentials["revoke_uri"]
+        user.googleAccessToken  = credentials[GOOGLE_ACCESS_TOKEN]
+        user.googleRefreshToken = credentials[GOOGLE_REFRESH_TOKEN]
+        user.googleTokenExpiry  = credentials[GOOGLE_TOKEN_EXPIRY]
+        user.googleTokenURI     = credentials[GOOGLE_TOKEN_URI]
+        user.googleRevokeURI    = credentials[GOOGLE_REVOKE_URI]
         user.googleSheetAccess = True
         user.save()
         app.logger.debug("User "+user.email+" provided spreadsheet access")
@@ -93,21 +114,21 @@ def googleSpreadsheetLogin():
 @pages.route("/login/splitwise")
 @login_required
 def splitwiseLogin():
-    if 'oauth_token' not in request.args or 'oauth_verifier' not in request.args:
+    if SPLITWISE_OAUTH_TOKEN not in request.args or SPLITWISE_OAUTH_VERIFIER not in request.args:
         app.logger.debug("User "+current_user.email+" trying to provide splitwise access")
         sObj = Splitwise(app.config["SPLITWISE_CONSUMER_KEY"],app.config["SPLITWISE_CONSUMER_SECRET"])
         url, secret = sObj.getAuthorizeURL()
-        session['splitwisesecret'] = secret
+        session[SPLITWISE_SECRET] = secret
         return redirect(url)
 
     else:
-        oauth_token    = request.args.get('oauth_token')
-        oauth_verifier = request.args.get('oauth_verifier')
+        oauth_token    = request.args.get(SPLITWISE_OAUTH_TOKEN)
+        oauth_verifier = request.args.get(SPLITWISE_OAUTH_VERIFIER)
         sObj = Splitwise(app.config["SPLITWISE_CONSUMER_KEY"],app.config["SPLITWISE_CONSUMER_SECRET"])
-        access_token = sObj.getAccessToken(oauth_token,session['splitwisesecret'],oauth_verifier)
+        access_token = sObj.getAccessToken(oauth_token,session[SPLITWISE_SECRET],oauth_verifier)
         user = current_user
-        user.splitwiseToken = access_token["oauth_token"]
-        user.splitwiseTokenSecret = access_token["oauth_token_secret"]
+        user.splitwiseToken = access_token[SPLITWISE_OAUTH_TOKEN]
+        user.splitwiseTokenSecret = access_token[SPLITWISE_OAUTH_TOKEN_SECRET]
         user.splitwiseAccess = True
         user.save()
         app.logger.debug("User "+user.email+" provided splitwise access")
