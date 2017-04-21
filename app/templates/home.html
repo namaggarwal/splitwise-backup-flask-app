@@ -27,7 +27,7 @@
     <div class="row loginRow row-centered">
       {% if not current_user.googleSheetAccess %}
         <div class="col-md-4 col-centered googleCont">
-          <img src="/static/img/google.png">
+          <img src="{{ url_for('static', filename='img/google.png') }}">
         </div>
         <div class="col-md-2 col-centered googleCont">
           <a href="{{ url_for('pages.googleSpreadsheetLogin') }}" class="btn btn-success">
@@ -37,7 +37,7 @@
       {% endif %}
       {% if not current_user.googleSheetAccess %}
         <div class="col-md-4 col-centered splitwiseCont">
-          <img src="/static/img/splitwise.png">
+          <img src="{{ url_for('static', filename='img/splitwise.png') }}">
         </div>
         <div class="col-md-2 col-centered splitwiseCont">
           <a href="{{ url_for('pages.splitwiseLogin') }}" class="btn btn-success">
