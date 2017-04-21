@@ -6,6 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from backupscheduler import backupData
 from logger import Logger
 from flask_migrate import Migrate
+from werkzeug.wsgi import DispatcherMiddleware
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -21,6 +22,7 @@ if os.environ.get('APP_CONFIG_FILE', None):
 ### Flask Configurations ####
 app.secret_key = app.config["FLASK_SECRET_KEY"]
 
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {app.config["APPLICATION_ROOT"]:app.wsgi_app})
 
 ### SQL Alchemy Configurations ####
 app.config['SQLALCHEMY_DATABASE_URI'] = app.config["DATABASE_URI"]
