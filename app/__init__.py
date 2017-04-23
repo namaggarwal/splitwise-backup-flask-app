@@ -22,7 +22,18 @@ if os.environ.get('APP_CONFIG_FILE', None):
 ### Flask Configurations ####
 app.secret_key = app.config["FLASK_SECRET_KEY"]
 
-app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {app.config["APPLICATION_ROOT"]:app.wsgi_app})
+#### Set the correct application root ####
+if app.config["APPLICATION_ROOT"] != "" and app.config["APPLICATION_ROOT"] != None:
+    app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {app.config["APPLICATION_ROOT"]:app.wsgi_app})
+else:
+    app.config["APPLICATION_ROOT"] = None
+
+#### Proxy fix if your app is behind Proxy #####
+
+if app.config["BEHIND_PROXY"]:
+    from werkzeug.contrib.fixers import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app)
+
 
 ### SQL Alchemy Configurations ####
 app.config['SQLALCHEMY_DATABASE_URI'] = app.config["DATABASE_URI"]
