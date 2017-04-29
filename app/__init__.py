@@ -69,8 +69,8 @@ def error_request(e):
     return render_template('error.html',errorcode=500), 500
 
 ### Backup ####
-@app.before_first_request
-def initialize():
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(backupData, 'interval', minutes=2, args=[app])
-    scheduler.start()
+app.logger.debug("Starting the scheduler")
+scheduler = BackgroundScheduler()
+scheduler.add_job(backupData, 'interval', seconds=30, args=[app])
+scheduler.start()
+app.logger.debug("Scheduler started")
