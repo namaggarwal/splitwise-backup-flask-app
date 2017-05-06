@@ -180,7 +180,7 @@ def backupData(app):
 
             try:
                 app.logger.debug("Saving data for user %s",user.email)
-                googleSheet.batchUpdate(spreadsheet.getId(),updateData)
+                googleSheet.batchUpdate(spreadsheet.getId(),updateData,currMonth)
             except:
                 app.logger.error("Error saving sheet data for month %s for user %s",currMonth,user.email)
                 continue

@@ -64,15 +64,18 @@ class GoogleSheet(object):
             return None
 
 
-    def batchUpdate(self,spreadsheetId,data):
+    def batchUpdate(self,spreadsheetId,data,sheetName=''):
 
+        if sheetName is None:
+            sheetName = ''
+            
         request_body = {
             "data":[],
             "valueInputOption":"USER_ENTERED"
         }
 
         for key, value in data.iteritems():
-            request_body["data"].append({"range":key,"values":[[value]]})
+            request_body["data"].append({"range":sheetName+'!'+key,"values":[[value]]})
 
         request = self.service.spreadsheets().values().batchUpdate(spreadsheetId=spreadsheetId, body=request_body)
         response = request.execute()
